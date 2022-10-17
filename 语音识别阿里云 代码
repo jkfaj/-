@@ -1,1 +1,112 @@
+# -*- coding: UTF-8 -*-
+# Python 2.x引入httplib模块
+# import httplib
+# Python 3.x引入http.client模块
+import http.client
+from datetime import datetime
+import json
+
+def process(request, token, audioFile) :
+
+    # 读取音频文件
+    with open(audioFile, mode = 'rb') as f:
+        audioContent = f.read()
+
+    host = 'nls-gateway-cn-shanghai.aliyuncs.com'
+
+    # 设置HTTPS请求头部
+    httpHeaders = {
+        'X-NLS-Token': token,
+        'Content-type': 'application/octet-stream',
+        'Content-Length': len(audioContent)
+        }
+
+
+    # Python 2.x使用httplib
+    # conn = httplib.HTTPConnection(host)
+
+    # Python 3.x使用http.client
+    conn = http.client.HTTPConnection(host)
+
+    conn.request(method='POST', url=request, body=audioContent, headers=httpHeaders)
+
+    response = conn.getresponse()
+    print('Response status and response reason:')
+    print(response.status ,response.reason)
+
+    body = response.read()
+    try:
+        print('Recognize response is:')
+        body = json.loads(body)
+        print(body)
+
+        status = body['status']
+        if status == 20000000 :
+            result = body['result']
+#            print('Recognize result: ' + result)
+            return result
+        else :
+            print('Recognizer failed!')
+
+    except ValueError:
+        print('The response is not json format string')
+
+    conn.close()
+
+
+
+appKey = 'LTAI5tDCdQARDVh2XYMjJGLa'
+token = '填入服务鉴权Token'
+
+# 服务请求地址
+url = 'https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/asr'
+
+# 音频文件
+# audioFile = '/path/to/nls-sample-16k.wav'
+format = 'pcm'
+sampleRate = 16000
+enablePunctuationPrediction  = True
+enableInverseTextNormalization = True
+enableVoiceDetection  = False
+
+# 设置RESTful请求参数
+request = url + '?appkey=' + appKey
+request = request + '&format=' + format
+request = request + '&sample_rate=' + str(sampleRate)
+
+if enablePunctuationPrediction :
+    request = request + '&enable_punctuation_prediction=' + 'true'
+
+if enableInverseTextNormalization :
+    request = request + '&enable_inverse_text_normalization=' + 'true'
+
+if enableVoiceDetection :
+    request = request + '&enable_voice_detection=' + 'true'
+
+# print('Request: ' + request)
+
+
+data2=pd.DataFrame(data=None,columns=['编号','语音内容'])
+
+trans_wav="C:\\Users\\Administrator\\Desktop\\test\\转wav"
+    # 测试时候在此处正确填写相关信息即可运行
+time1 = datetime.now()
+for i in os.listdir(trans_wav):
+    num=os.path.splitext(i)[0]
+    xunfei_wav=trans_wav+'\\'+i
+    audioFile = xunfei_wav
+    result= process(request, token, audioFile)
+    print(num,result)
+    dic ={'编号':num,'语音内容':result}
+    data1=pd.DataFrame(dic,index=[0])
+    data2=data2.append(data1,ignore_index=True)
+    
+time2 = datetime.now()
+print(time2-time1)
+now_time=datetime.now().strftime('%Y%m%d%H%M%S')
+trans_txt=now_time+'.txt'
+log_file="C:\\Users\\Administrator\\Desktop\\test\\日志\\"+trans_txt
+data2.to_csv(log_file,index=False,sep=' ')
+
+
 
