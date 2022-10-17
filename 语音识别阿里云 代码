@@ -123,8 +123,7 @@ if __name__ == "__main__":
         print('token有效期的北京时间：%s' % (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expire_time))))
 
 
-appKey = 'LTAI5tDCdQARDVh2XYMjJGLa'
-
+appKey = 'gF3HRZAKLeo6uD84'
 
 # 服务请求地址
 url = 'https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/asr'
